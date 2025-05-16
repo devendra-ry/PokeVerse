@@ -16,4 +16,7 @@ export default defineConfig({
   esbuild: {
     loader: 'jsx', // Correctly set the loader to a string
   },
+  build: {
+    outDir: 'dist/client',
+  }
 })

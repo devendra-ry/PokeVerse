@@ -65,43 +65,51 @@ function App() {
     const [activeTab, setActiveTab] = useState("about");
     const [initialPokemonList, setInitialPokemonList] = useState([]); // New state for the initial grid list
     const [initialLoading, setInitialLoading] = useState(true); // New state for initial loading
+    const [currentPage, setCurrentPage] = useState(0); // State for current page (0-indexed)
+    const [itemsPerPage] = useState(50); // Number of items per page
+    const [totalPokemonCount, setTotalPokemonCount] = useState(0); // Total number of Pokemon
 
-    // Effect to fetch the initial list of Pokemon when the component mounts
+    // Function to fetch a specific page of Pokemon
+    const fetchPokemonPage = async (limit, offset) => {
+        setInitialLoading(true);
+        try {
+            const listResponse = await Axios.get(`https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`);
+            const results = listResponse.data.results;
+            setTotalPokemonCount(listResponse.data.count); // Store total count
+
+            // Fetch details for each Pokemon concurrently
+            const detailedPokemonPromises = results.map(async (p) => {
+                const detailResponse = await Axios.get(p.url);
+                return {
+                    id: detailResponse.data.id,
+                    name: detailResponse.data.name,
+                    image: detailResponse.data.sprites.other?.dream_world?.front_default ||
+                           detailResponse.data.sprites.other?.["official-artwork"]?.front_default ||
+                           detailResponse.data.sprites.front_default ||
+                           "https://via.placeholder.com/100", // Smaller placeholder for grid
+                    types: detailResponse.data.types.map(type => type.type.name),
+                };
+            });
+
+            const detailedPokemonList = await Promise.all(detailedPokemonPromises);
+
+            // Append new results to the existing list
+            setInitialPokemonList(prevList => [...prevList, ...detailedPokemonList]);
+
+        } catch (err) {
+            console.error("[fetchPokemonPage] Error fetching Pokemon page:", err);
+            // Handle error, maybe set an error state for the initial load
+        } finally {
+            setInitialLoading(false);
+        }
+    };
+
+    // Effect to fetch the initial list of Pokemon when the component mounts or page changes
     useEffect(() => {
-        const fetchInitialPokemon = async () => {
-            setInitialLoading(true);
-            try {
-                // Fetch the first 151 Pokemon (Generation 1)
-                const listResponse = await Axios.get('https://pokeapi.co/api/v2/pokemon?limit=151');
-                const results = listResponse.data.results;
-
-                // Fetch details for each Pokemon concurrently
-                const detailedPokemonPromises = results.map(async (p) => {
-                    const detailResponse = await Axios.get(p.url);
-                    return {
-                        id: detailResponse.data.id,
-                        name: detailResponse.data.name,
-                        image: detailResponse.data.sprites.other?.dream_world?.front_default ||
-                               detailResponse.data.sprites.other?.["official-artwork"]?.front_default ||
-                               detailResponse.data.sprites.front_default ||
-                               "https://via.placeholder.com/100", // Smaller placeholder for grid
-                        types: detailResponse.data.types.map(type => type.type.name),
-                    };
-                });
-
-                const detailedPokemonList = await Promise.all(detailedPokemonPromises);
-                setInitialPokemonList(detailedPokemonList);
-
-            } catch (err) {
-                console.error("[fetchInitialPokemon] Error fetching initial Pokemon list:", err);
-                // Handle error, maybe set an error state for the initial load
-            } finally {
-                setInitialLoading(false);
-            }
-        };
-
-        fetchInitialPokemon();
-    }, []); // Empty dependency array means this effect runs only once on mount
+        // Calculate offset based on current page and items per page
+        const offset = currentPage * itemsPerPage;
+        fetchPokemonPage(itemsPerPage, offset);
+    }, [currentPage, itemsPerPage]); // Re-run effect when currentPage or itemsPerPage changes
 
     const executeSearch = async (nameToSearch) => {
         const pkmnQuery = (nameToSearch || pokemonName).toLowerCase().trim();
@@ -199,31 +207,45 @@ function App() {
         executeSearch(pokemonName); // Trigger the detailed search
     };
 
-    // We no longer need handleInitialSearch as the initial view is a grid
-    // const handleInitialSearch = () => {
-    //     executeSearch(pokemonName); // Use the name from the input field
-    // }
+    // Function to handle loading more Pokemon
+    const handleLoadMore = () => {
+        setCurrentPage(prevPage => prevPage + 1);
+    };
+
+    // Determine if there are more Pokemon to load
+    const hasMorePokemon = initialPokemonList.length < totalPokemonCount;
 
     return (
         <div className="App">
             {/* Conditionally render the grid or the detailed card */}
-            {initialLoading && !pokemon && <p className="loading">Loading initial Pokemon...</p>}
+            {initialLoading && initialPokemonList.length === 0 && <p className="loading">Loading initial Pokemon...</p>}
             {error && !pokemon && <div className="error">{error}</div>} {/* Show error if initial load fails */}
 
-            {!pokemon && !initialLoading && initialPokemonList.length > 0 && (
-                <div className="PokemonGrid"> {/* You'll need to add CSS for this class */}
-                    {initialPokemonList.map(p => (
-                        // Use the PokemonGridItem component here
-                        <PokemonGridItem // Replace the inline div with this component
-                            key={p.id}
-                            pokemon={p} // Pass simplified data
-                            onClick={() => handleGridItemClick(p.name)}
-                        />
-                    ))}
+            {!pokemon && initialPokemonList.length > 0 && (
+                <div className="PokemonListContainer"> {/* New container div */}
+                    <div className="PokemonGrid"> {/* You'll need to add CSS for this class */}
+                        {initialPokemonList.map(p => (
+                            // Use the PokemonGridItem component here
+                            <PokemonGridItem // Replace the inline div with this component
+                                key={p.id}
+                                pokemon={p} // Pass simplified data
+                                onClick={() => handleGridItemClick(p.name)}
+                            />
+                        ))}
+                    </div>
+                    {/* Add Load More button */}
+                    {initialLoading && initialPokemonList.length > 0 && <p className="loading">Loading more...</p>}
+                    {!initialLoading && hasMorePokemon && (
+                        <button className="LoadMoreButton" onClick={handleLoadMore} disabled={initialLoading}>
+                            Load More
+                        </button>
+                    )}
+                    {!initialLoading && !hasMorePokemon && totalPokemonCount > 0 && (
+                         <p className="EndMessage">You've seen all {totalPokemonCount} Pokemon!</p>
+                    )}
                 </div>
             )}
 
-            {/* Render the detailed PokemonCard if a pokemon is selected */}
             {pokemon && (
                 <PokemonCard
                     pokemon={pokemon}

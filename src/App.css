@@ -273,7 +273,8 @@ body {
     gap: 15px; /* Space between grid items */
     padding: 20px;
     max-width: 900px; /* Limit grid width */
-    margin: 20px auto; /* Center the grid */
+    /* Remove margin: 20px auto; from here */
+    /* margin: 20px auto; */
     justify-content: center; /* Center items in the grid */
 }
 
@@ -323,4 +324,45 @@ body {
     font-size: 0.7em;
     font-weight: bold;
     text-shadow: none; /* Remove text shadow from badge text */
+}
+
+.LoadMoreButton {
+    display: block; /* Make it a block element */
+    /* margin: 20px auto; /* This will now center within the new container */
+    margin: 20px auto;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    background-color: #ffcb05; /* Yellow */
+    color: #333;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.LoadMoreButton:hover:not(:disabled) {
+    background-color: #e0b000; /* Darker yellow */
+}
+
+.LoadMoreButton:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.EndMessage {
+    text-align: center;
+    /* margin: 20px auto; /* This will now center within the new container */
+    margin: 20px auto;
+    color: #666;
+    font-size: 16px;
+}
+
+/* Add styles for the new container */
+.PokemonListContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Center children (grid, button, message) horizontally */
+    width: 100%; /* Allow container to take full width */
+    max-width: 900px; /* Match grid max-width for consistent centering */
+    margin: 20px auto; /* Center the container itself and add vertical margin */
 }
