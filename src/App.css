@@ -201,18 +201,151 @@
 }
 
 /* Responsive adjustments */
-@media (max-width: 480px) {
+/* Add responsiveness for main components */
+@media (max-width: 768px) {
+  .App {
+    padding: 10px; /* Reduce padding */
+  }
+
+  .SearchSection {
+    padding: 20px; /* Adjust padding */
+    max-width: 100%; /* Allow search section to take full width */
+  }
+
+  .SearchSection input,
+  .SearchSection button {
+    font-size: 14px; /* Reduce font size */
+    height: 40px; /* Adjust height */
+  }
+
+  .PokemonGrid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Adjust grid for smaller items */
+    gap: 10px; /* Reduce gap */
+    max-width: 100%; /* Allow grid to take full width */
+  }
+
+  .PokemonGridItem {
+    padding: 10px; /* Adjust padding */
+    border-radius: 8px; /* Adjust border radius */
+  }
+
+  .PokemonGridImage {
+    width: 80px; /* Adjust image size */
+    height: 80px;
+  }
+
+  .PokemonGridItem h3 {
+    font-size: 1em; /* Adjust font size */
+    margin: 5px 0;
+  }
+
+  .TypeBadge {
+    padding: 3px 8px; /* Adjust badge padding */
+    font-size: 0.6em; /* Adjust badge font size */
+  }
+
+  .PokemonListContainer {
+    max-width: 100%; /* Allow container to take full width */
+    margin: 10px auto; /* Adjust margin */
+  }
+
+  .LoadMoreButton {
+    padding: 8px 15px; /* Adjust button padding */
+    font-size: 14px; /* Adjust button font size */
+  }
+
+  .EndMessage {
+    font-size: 14px; /* Adjust font size */
+    margin: 10px auto; /* Adjust margin */
+  }
+
+  /* Pokemon Card responsiveness */
   .PokemonCard {
-    max-width: 100%;
+    max-width: 100%; /* Allow card to take full width */
+    border-radius: 15px; /* Adjust border radius */
   }
-  
+
+  .CardHeader {
+    padding: 10px; /* Adjust padding */
+  }
+
+  .BackButton, .FavoriteButton {
+    font-size: 20px; /* Adjust icon size */
+  }
+
+  .PokemonInfo {
+    padding: 15px; /* Adjust padding */
+    min-height: 150px; /* Adjust minimum height */
+  }
+
+  .PokemonInfo h1 {
+    font-size: 24px; /* Adjust font size */
+  }
+
+  .PokemonNumber {
+    top: 15px; /* Adjust position */
+    right: 15px;
+    font-size: 16px; /* Adjust font size */
+  }
+
+  .TypeBadges {
+    margin-top: 5px; /* Adjust margin */
+    gap: 5px; /* Adjust gap */
+  }
+
+  .PokemonImage {
+    width: 120px; /* Adjust image size */
+    height: 120px;
+    margin-top: 10px; /* Adjust margin */
+  }
+
+  .TabsContainer {
+    margin-top: -30px; /* Adjust margin */
+    padding-top: 40px; /* Adjust padding */
+  }
+
+  .Tabs {
+    flex-wrap: wrap; /* Allow tabs to wrap on smaller screens */
+    justify-content: center; /* Center tabs */
+  }
+
   .TabButton {
-    font-size: 12px;
-    padding: 10px 5px;
+    flex: none; /* Remove flex-grow */
+    width: 50%; /* Make tabs take 50% width */
+    padding: 10px 5px; /* Adjust padding */
+    font-size: 12px; /* Adjust font size */
   }
-  
+
+  .TabContent {
+    padding: 15px; /* Adjust padding */
+  }
+
   .InfoRow {
-    font-size: 14px;
+    flex-direction: column; /* Stack info rows vertically */
+    align-items: flex-start; /* Align items to the start */
+    margin-bottom: 10px; /* Add margin between rows */
+  }
+
+  .InfoLabel {
+    font-weight: bold; /* Keep label bold */
+    margin-bottom: 3px; /* Add small margin below label */
+  }
+
+  .InfoValue {
+    font-size: 0.9em; /* Adjust value font size */
+  }
+
+  .EvolutionNode {
+    margin-top: 5px; /* Adjust margin */
+  }
+
+  .EvolvesTo {
+    padding-left: 10px; /* Adjust padding */
+    margin-left: 5px; /* Adjust margin */
+  }
+
+  .PokemonNameLink {
+    font-size: 0.9em; /* Adjust font size */
   }
 }
 

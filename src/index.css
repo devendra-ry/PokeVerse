@@ -90,9 +90,23 @@ code {
   margin-top: 10px;
 }
 
-/* Responsive adjustments */
+/* Add basic responsiveness */
 @media (max-width: 768px) {
+  .pokemon-app {
+    padding: 10px; /* Reduce padding on smaller screens */
+  }
+
   .TitleSection h1 {
-    font-size: 1.5em;
+    font-size: 1.5em; /* Reduce title font size */
+  }
+
+  .TitleSection input[type="text"] {
+    font-size: 14px; /* Reduce input font size */
+    padding: 8px;
+  }
+
+  .TitleSection button {
+    font-size: 14px; /* Reduce button font size */
+    padding: 8px 15px;
   }
 }
