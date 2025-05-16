@@ -1,9 +1,11 @@
 import './App.css';
 import { useState } from 'react';
 import Axios from "axios";
+import SearchSection from './SearchSection';
+import PokemonCard from './PokemonCard';
 
 // Helper function to get background color based on Pokemon type
-function getTypeColor(type) {
+export function getTypeColor(type) { // Export this function
     const typeColors = {
         normal: '#A8A77A', fire: '#EE8130', water: '#6390F0', electric: '#F7D02C',
         grass: '#7AC74C', ice: '#96D9D6', fighting: '#C22E28', poison: '#A33EA1',
@@ -14,7 +16,7 @@ function getTypeColor(type) {
     return typeColors[type] || '#78C850'; // Default color
 }
 
-// Component to display each stage of evolution recursively
+// EvolutionStage component is moved to EvolutionStage.jsx
 function EvolutionStage({ stage, onPokemonSelect }) {
     if (!stage) return null;
 
@@ -121,7 +123,7 @@ function App() {
                 moves: currentPokemonMoves // These are the moves for the specific Pokemon queried (e.g., "pikachu")
             };
             console.log(`[executeSearch] New Pokemon data object to be set in state for "${pkmnQuery}":`, newPokemonData);
-            
+
             setPokemon(newPokemonData); // Set the new Pokemon data, including its specific moves
             if (nameToSearch) { // If the search was triggered by clicking an evolution
                 setActiveTab("about"); // Reset to about tab for clarity on new Pokemon
@@ -156,120 +158,28 @@ function App() {
     return (
         <div className="App">
             {!pokemon && (
-                <div className="SearchSection">
-                    <h1>Pokemon Stats</h1>
-                    <input
-                        type="text"
-                        placeholder="Enter Pokemon name"
-                        value={pokemonName}
-                        onChange={(e) => setPokemonName(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleInitialSearch()}
-                    />
-                    <button onClick={handleInitialSearch} disabled={loading}>
-                        {loading ? "Searching..." : "Search Pokemon"}
-                    </button>
-                    {error && <div className="error">{error}</div>}
-                </div>
+                <SearchSection
+                    pokemonName={pokemonName}
+                    setPokemonName={setPokemonName}
+                    handleInitialSearch={handleInitialSearch}
+                    loading={loading}
+                    error={error}
+                />
             )}
-            
+
             {loading && <p className="loading">Loading...</p>}
-            
-            {pokemon && ( // This 'pokemon' object contains the data for the currently displayed Pokemon
-                <div className="PokemonCard">
-                    <div className="CardHeader">
-                        <button className="BackButton" onClick={() => { setPokemon(null); setError(null); /* setPokemonName(""); // Optional: clear search input on back */ }}>←</button>
-                    </div>
-                    
-                    <div className="PokemonInfo" style={{backgroundColor: getTypeColor(pokemon.types[0])}}>
-                        <h1>{pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}</h1>
-                        <div className="PokemonNumber">#{String(pokemon.id).padStart(3, '0')}</div>
-                        <div className="TypeBadges">
-                            {pokemon.types.map((type, index) => (
-                                <span key={`${pokemon.id}-type-${index}`} className="TypeBadge">{type}</span>
-                            ))}
-                        </div>
-                        <img src={pokemon.image} alt={pokemon.name} className="PokemonImage" />
-                    </div>
-                    
-                    <div className="TabsContainer">
-                        <div className="Tabs">
-                            {["about", "baseStats", "evolution", "moves"].map(tabName => (
-                                <button 
-                                    key={tabName}
-                                    className={activeTab === tabName ? "TabButton active" : "TabButton"}
-                                    onClick={() => setActiveTab(tabName)}
-                                >
-                                    {tabName.charAt(0).toUpperCase() + tabName.slice(1).replace("baseStats", "Base Stats")}
-                                </button>
-                            ))}
-                        </div>
-                        
-                        <div className="TabContent">
-                            {activeTab === "about" && (
-                                <div className="AboutTab">
-                                    <div className="InfoRow"><div className="InfoLabel">Species</div><div className="InfoValue">{pokemon.species}</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Height</div><div className="InfoValue">{pokemon.height}m ({(pokemon.height * 3.28084).toFixed(2)}ft)</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Weight</div><div className="InfoValue">{pokemon.weight}kg ({(pokemon.weight * 2.20462).toFixed(1)}lbs)</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Abilities</div><div className="InfoValue">{pokemon.abilities}</div></div>
-                                    <h3>Breeding</h3>
-                                    <div className="InfoRow"><div className="InfoLabel">Gender</div><div className="InfoValue">{pokemon.gender_rate === -1 ? "Genderless" : <>♂ {100 - (pokemon.gender_rate * 12.5)}% ♀ {pokemon.gender_rate * 12.5}%</>}</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Egg Groups</div><div className="InfoValue">{pokemon.egg_groups}</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Egg Cycle</div><div className="InfoValue">{pokemon.egg_cycle} (Approx. {pokemon.egg_cycle * 255} steps)</div></div>
-                                </div>
-                            )}
-                            
-                            {activeTab === "baseStats" && (
-                                <div className="BaseStatsTab">
-                                    <div className="InfoRow"><div className="InfoLabel">HP</div><div className="InfoValue">{pokemon.stats.hp}</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Attack</div><div className="InfoValue">{pokemon.stats.attack}</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Defense</div><div className="InfoValue">{pokemon.stats.defense}</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Special Attack</div><div className="InfoValue">{pokemon.stats.specialAttack}</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Special Defense</div><div className="InfoValue">{pokemon.stats.specialDefense}</div></div>
-                                    <div className="InfoRow"><div className="InfoLabel">Speed</div><div className="InfoValue">{pokemon.stats.speed}</div></div>
-                                </div>
-                            )}
-                            
-                            {activeTab === "evolution" && (
-                                <div className="EvolutionTab">
-                                    <h3>Evolution Chain</h3>
-                                    {pokemon.evolution_chain_data ? (
-                                        <EvolutionStage 
-                                            stage={pokemon.evolution_chain_data} 
-                                            onPokemonSelect={handleEvolutionPokemonSelect} 
-                                        />
-                                    ) : (
-                                        <p>No evolution data available.</p>
-                                    )}
-                                </div>
-                            )}
-                            
-                            {activeTab === "moves" && (
-                                <div className="MovesTab">
-                                    {/* This explicitly states which Pokemon's moves are being shown */}
-                                    <h3>Moves for {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}</h3>
-                                    
-                                    {/* This console log is CRITICAL for debugging. It shows what 'pokemon.moves' contains AT THE TIME OF RENDERING */}
-                                    {console.log(`[MovesTab] Rendering. Currently displaying Pokemon: "${pokemon.name}". Moves in state (pokemon.moves):`, pokemon.moves)}
-                                    
-                                    {pokemon.moves && pokemon.moves.length > 0 ? (
-                                        <ul className="MovesList">
-                                            {/* pokemon.moves is the array of moves for the CURRENTLY displayed Pokemon */}
-                                            {pokemon.moves.map((move, index) => (
-                                                <li key={`${pokemon.id}-${move.name}-${index}`} className="MoveItem">
-                                                    {move.name.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    ) : (
-                                        <p>No moves listed for {pokemon.name.charAt(0).toUpperCase() + pokemon.name.slice(1)}.</p>
-                                    )}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
+
+            {pokemon && (
+                <PokemonCard
+                    pokemon={pokemon}
+                    activeTab={activeTab}
+                    setActiveTab={setActiveTab}
+                    setPokemon={setPokemon}
+                    setError={setError}
+                    handleEvolutionPokemonSelect={handleEvolutionPokemonSelect}
+                />
             )}
-            
+
             {!pokemon && !loading && !error && <p className="InitialMessage">Please search for a Pokemon.</p>}
         </div>
     );
