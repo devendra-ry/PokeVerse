@@ -265,3 +265,62 @@ body {
 .DisplaySection img {
   width: 100px;
 }
+
+
+.PokemonGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); /* Responsive grid */
+    gap: 15px; /* Space between grid items */
+    padding: 20px;
+    max-width: 900px; /* Limit grid width */
+    margin: 20px auto; /* Center the grid */
+    justify-content: center; /* Center items in the grid */
+}
+
+.PokemonGridItem {
+    border-radius: 10px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+    color: #fff; /* White text for better contrast on colored backgrounds */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3); /* Add text shadow for readability */
+}
+
+.PokemonGridItem:hover {
+    transform: translateY(-5px); /* Slight lift effect on hover */
+}
+
+.PokemonGridItem h3 {
+    margin: 5px 0;
+    font-size: 1em;
+    color: inherit; /* Inherit color from parent */
+}
+
+.PokemonGridImage {
+    width: 80px; /* Adjust size as needed */
+    height: 80px; /* Adjust size as needed */
+    object-fit: contain; /* Ensure image fits without distortion */
+    margin-bottom: 5px;
+}
+
+/* Style for the type badges within the grid item */
+.PokemonGridItem .TypeBadges {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.PokemonGridItem .TypeBadge {
+    background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent white badge */
+    color: #333; /* Dark text for badges */
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7em;
+    font-weight: bold;
+    text-shadow: none; /* Remove text shadow from badge text */
+}

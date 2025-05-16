@@ -1,8 +1,10 @@
 import './App.css';
-import { useState } from 'react';
+import { useState, useEffect } from 'react'; // Import useEffect
 import Axios from "axios";
-import SearchSection from './SearchSection';
+// import SearchSection from './SearchSection'; // We will remove SearchSection from the initial view
 import PokemonCard from './PokemonCard';
+// Import the new component for grid items (you'll need to create this file)
+import PokemonGridItem from './PokemonGridItem'; // Uncomment this line
 
 // Helper function to get background color based on Pokemon type
 export function getTypeColor(type) { // Export this function
@@ -57,32 +59,73 @@ function EvolutionStage({ stage, onPokemonSelect }) {
 
 function App() {
     const [pokemonName, setPokemonName] = useState("");
-    const [pokemon, setPokemon] = useState(null);
+    const [pokemon, setPokemon] = useState(null); // This holds the currently selected Pokemon for the detailed view
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [activeTab, setActiveTab] = useState("about");
+    const [initialPokemonList, setInitialPokemonList] = useState([]); // New state for the initial grid list
+    const [initialLoading, setInitialLoading] = useState(true); // New state for initial loading
+
+    // Effect to fetch the initial list of Pokemon when the component mounts
+    useEffect(() => {
+        const fetchInitialPokemon = async () => {
+            setInitialLoading(true);
+            try {
+                // Fetch the first 151 Pokemon (Generation 1)
+                const listResponse = await Axios.get('https://pokeapi.co/api/v2/pokemon?limit=151');
+                const results = listResponse.data.results;
+
+                // Fetch details for each Pokemon concurrently
+                const detailedPokemonPromises = results.map(async (p) => {
+                    const detailResponse = await Axios.get(p.url);
+                    return {
+                        id: detailResponse.data.id,
+                        name: detailResponse.data.name,
+                        image: detailResponse.data.sprites.other?.dream_world?.front_default ||
+                               detailResponse.data.sprites.other?.["official-artwork"]?.front_default ||
+                               detailResponse.data.sprites.front_default ||
+                               "https://via.placeholder.com/100", // Smaller placeholder for grid
+                        types: detailResponse.data.types.map(type => type.type.name),
+                    };
+                });
+
+                const detailedPokemonList = await Promise.all(detailedPokemonPromises);
+                setInitialPokemonList(detailedPokemonList);
+
+            } catch (err) {
+                console.error("[fetchInitialPokemon] Error fetching initial Pokemon list:", err);
+                // Handle error, maybe set an error state for the initial load
+            } finally {
+                setInitialLoading(false);
+            }
+        };
+
+        fetchInitialPokemon();
+    }, []); // Empty dependency array means this effect runs only once on mount
 
     const executeSearch = async (nameToSearch) => {
         const pkmnQuery = (nameToSearch || pokemonName).toLowerCase().trim();
         console.log(`[executeSearch] Starting search for: "${pkmnQuery}"`);
 
         if (!pkmnQuery) {
-            setError("Please enter a Pokemon name.");
-            setPokemon(null);
+            // If no query, and we are not in detailed view, do nothing or show initial list
+            if (!pokemon) {
+                 setError(null); // Clear error if user goes back to list
+            }
             return;
         }
 
         setLoading(true);
         setError(null);
-        setPokemon(null); 
+        setPokemon(null); // Clear previous pokemon data
 
         try {
             const response = await Axios.get(`https://pokeapi.co/api/v2/pokemon/${pkmnQuery}`);
             console.log(`[executeSearch] API response for "${pkmnQuery}" received successfully.`);
-            
+
             const speciesResponse = await Axios.get(response.data.species.url);
             const evolutionResponse = await Axios.get(speciesResponse.data.evolution_chain.url);
-            
+
             // This log shows the raw 'moves' array from the API for the specific Pokemon queried
             console.log(`[executeSearch] Raw moves for "${pkmnQuery}" from API (response.data.moves):`, response.data.moves);
 
@@ -99,10 +142,10 @@ function App() {
             const newPokemonData = {
                 id: response.data.id,
                 name: response.data.name, // This is the name of the specific Pokemon (e.g., "pikachu")
-                species: response.data.species.name,
-                image: response.data.sprites.other?.dream_world?.front_default || 
-                       response.data.sprites.other?.["official-artwork"]?.front_default || 
-                       response.data.sprites.front_default || 
+                species: speciesResponse.data.genera.find(g => g.language.name === 'en')?.genus || speciesResponse.data.species.name, // Get species genus
+                image: response.data.sprites.other?.dream_world?.front_default ||
+                       response.data.sprites.other?.["official-artwork"]?.front_default ||
+                       response.data.sprites.front_default ||
                        "https://via.placeholder.com/150",
                 height: (response.data.height * 0.1).toFixed(2),
                 weight: (response.data.weight * 0.1).toFixed(1),
@@ -125,9 +168,8 @@ function App() {
             console.log(`[executeSearch] New Pokemon data object to be set in state for "${pkmnQuery}":`, newPokemonData);
 
             setPokemon(newPokemonData); // Set the new Pokemon data, including its specific moves
-            if (nameToSearch) { // If the search was triggered by clicking an evolution
-                setActiveTab("about"); // Reset to about tab for clarity on new Pokemon
-            }
+            setActiveTab("about"); // Reset to about tab for clarity on new Pokemon
+
         } catch (err) {
             console.error(`[executeSearch] Error fetching data for "${pkmnQuery}":`, err);
             if (Axios.isAxiosError(err)) {
@@ -139,7 +181,7 @@ function App() {
             } else {
                 setError("An unexpected error occurred. Please try again.");
             }
-            setPokemon(null);
+            setPokemon(null); // Ensure pokemon state is null on error
         } finally {
             setLoading(false);
         }
@@ -147,28 +189,41 @@ function App() {
 
     const handleEvolutionPokemonSelect = (name) => {
         console.log(`[handleEvolutionPokemonSelect] Evolution selected: "${name}". Updating input field and re-searching.`);
-        setPokemonName(name); // Update the input field text
+        setPokemonName(name); // Update the input field text (optional, but good for consistency)
         executeSearch(name); // This will fetch and display data (including moves) ONLY for this 'name'
     };
 
-    const handleInitialSearch = () => {
-        executeSearch(pokemonName); // Use the name from the input field
-    }
+    // New function to handle clicks on the initial grid items
+    const handleGridItemClick = (pokemonName) => {
+        console.log(`[handleGridItemClick] Grid item clicked: "${pokemonName}". Searching for details.`);
+        executeSearch(pokemonName); // Trigger the detailed search
+    };
+
+    // We no longer need handleInitialSearch as the initial view is a grid
+    // const handleInitialSearch = () => {
+    //     executeSearch(pokemonName); // Use the name from the input field
+    // }
 
     return (
         <div className="App">
-            {!pokemon && (
-                <SearchSection
-                    pokemonName={pokemonName}
-                    setPokemonName={setPokemonName}
-                    handleInitialSearch={handleInitialSearch}
-                    loading={loading}
-                    error={error}
-                />
+            {/* Conditionally render the grid or the detailed card */}
+            {initialLoading && !pokemon && <p className="loading">Loading initial Pokemon...</p>}
+            {error && !pokemon && <div className="error">{error}</div>} {/* Show error if initial load fails */}
+
+            {!pokemon && !initialLoading && initialPokemonList.length > 0 && (
+                <div className="PokemonGrid"> {/* You'll need to add CSS for this class */}
+                    {initialPokemonList.map(p => (
+                        // Use the PokemonGridItem component here
+                        <PokemonGridItem // Replace the inline div with this component
+                            key={p.id}
+                            pokemon={p} // Pass simplified data
+                            onClick={() => handleGridItemClick(p.name)}
+                        />
+                    ))}
+                </div>
             )}
 
-            {loading && <p className="loading">Loading...</p>}
-
+            {/* Render the detailed PokemonCard if a pokemon is selected */}
             {pokemon && (
                 <PokemonCard
                     pokemon={pokemon}
@@ -180,7 +235,8 @@ function App() {
                 />
             )}
 
-            {!pokemon && !loading && !error && <p className="InitialMessage">Please search for a Pokemon.</p>}
+            {/* Remove the initial message */}
+            {/* {!pokemon && !loading && !error && <p className="InitialMessage">Please search for a Pokemon.</p>} */}
         </div>
     );
 }
