@@ -5,6 +5,7 @@ import Axios from "axios";
 import PokemonCard from './PokemonCard';
 // Import the new component for grid items (you'll need to create this file)
 import PokemonGridItem from './PokemonGridItem'; // Uncomment this line
+import SearchBar from './SearchBar'; // Import the new SearchBar component
 
 // Helper function to get background color based on Pokemon type
 export function getTypeColor(type) { // Export this function
@@ -217,6 +218,14 @@ function App() {
 
     return (
         <div className="App">
+            {/* Add the new SearchBar component here */}
+            <SearchBar
+                pokemonName={pokemonName}
+                setPokemonName={setPokemonName}
+                handleSearch={() => executeSearch()} // Pass the executeSearch function
+                loading={loading}
+            />
+
             {/* Conditionally render the grid or the detailed card */}
             {initialLoading && initialPokemonList.length === 0 && <p className="loading">Loading initial Pokemon...</p>}
             {error && !pokemon && <div className="error">{error}</div>} {/* Show error if initial load fails */}
@@ -224,10 +233,10 @@ function App() {
             {!pokemon && initialPokemonList.length > 0 && (
                 <div className="PokemonListContainer"> {/* New container div */}
                     <div className="PokemonGrid"> {/* You'll need to add CSS for this class */}
-                        {initialPokemonList.map(p => (
+                        {initialPokemonList.map((p, index) => (
                             // Use the PokemonGridItem component here
                             <PokemonGridItem // Replace the inline div with this component
-                                key={p.id}
+                                key={`pokemon-${p.id}-${index}`}
                                 pokemon={p} // Pass simplified data
                                 onClick={() => handleGridItemClick(p.name)}
                             />

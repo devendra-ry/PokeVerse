@@ -1,0 +1,89 @@
+.search-bar-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 500px; /* Adjust max-width as needed */
+    background-color: white;
+    border-radius: 30px; /* Rounded corners */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    overflow: hidden; /* Ensures rounded corners clip content */
+    padding: 5px; /* Add some padding inside the container */
+    margin: 20px auto; /* Center the search bar */
+}
+
+.search-input {
+    flex-grow: 1; /* Allows input to take up available space */
+    border: none; /* Remove default input border */
+    outline: none; /* Remove outline on focus */
+    padding: 10px 20px; /* Adjust padding */
+    font-size: 16px;
+    background: none; /* Remove input background */
+}
+
+.search-input::placeholder {
+    color: #aaa; /* Style placeholder text color */
+}
+
+.search-button {
+    width: 50px; /* Fixed width for the button */
+    height: 50px; /* Fixed height for the button */
+    border: none;
+    background-color: #ff0000; /* Red background */
+    color: white;
+    border-radius: 50%; /* Make it round */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-right: 5px; /* Add a small margin to the right */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Add a subtle shadow */
+}
+
+.search-button:hover:not(:disabled) {
+    background-color: #cc0000; /* Darker red on hover */
+}
+
+.search-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Placeholder for a Pokeball icon */
+.pokeball-icon {
+    width: 30px;
+    height: 30px;
+    background-color: white; /* White top half */
+    border-radius: 50%;
+    position: relative;
+    border: 3px solid #333; /* Black border */
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.pokeball-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 100%;
+    height: 50%;
+    background-color: #ff0000; /* Red bottom half */
+    border-top: 3px solid #333; /* Black line */
+    box-sizing: border-box;
+}
+
+.pokeball-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background-color: white;
+    border-radius: 50%;
+    border: 3px solid #333;
+    box-sizing: border-box;
+    z-index: 1; /* Ensure the inner circle is above the line */
+}
