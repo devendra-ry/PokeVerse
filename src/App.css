@@ -624,3 +624,118 @@ body {
     max-width: 900px; /* Match grid max-width for consistent centering */
     margin: 20px auto; /* Center the container itself and add vertical margin */
 }
+
+/* Updated styles for the stat bars */
+.BaseStatsTab {
+  padding: 5px 0;
+}
+
+.BaseStatsTab .InfoRow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  position: relative;
+}
+
+.BaseStatsTab .InfoLabel {
+  color: #666;
+  font-weight: 500;
+  width: 100px;
+  display: flex;
+  align-items: center;
+}
+
+.BaseStatsTab .InfoValue {
+  position: absolute;
+  left: 100px;
+  font-weight: 600;
+  z-index: 1;
+}
+
+.StatBar {
+  flex: 1;
+  height: 12px;
+  background-color: #f0f0f0;
+  border-radius: 6px;
+  margin-left: 40px;
+  overflow: hidden;
+  position: relative;
+}
+
+.StatBarFill {
+  height: 100%;
+  border-radius: 6px;
+}
+
+.TotalRow {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #eee;
+}
+
+/* Evolution Chain Styles */
+.EvolutionTab h3 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+}
+
+.EvolutionChainContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.EvolutionPokemon {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.EvolutionPokemon:hover {
+  transform: scale(1.05);
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+.EvolutionSprite {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+}
+
+.EvolutionName {
+  margin-top: 5px;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.EvolutionLevel {
+  font-size: 12px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.EvolutionArrow {
+  font-size: 24px;
+  color: #999;
+  margin: 0 5px;
+  align-self: center;
+}
+
+/* For mobile responsiveness */
+@media (max-width: 480px) {
+  .EvolutionChainContainer {
+    flex-direction: column;
+  }
+  
+  .EvolutionArrow {
+    transform: rotate(90deg);
+    margin: 10px 0;
+  }
+}
