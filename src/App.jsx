@@ -428,7 +428,6 @@ function App() {
 
     return (
         <div className="App">
-            {/* Add the new SearchBar component here */}
             <SearchBar
                 pokemonName={pokemonName}
                 setPokemonName={setPokemonName}
@@ -436,66 +435,57 @@ function App() {
                 loading={loading}
             />
             
-            {/* Add the new FilterBar component here */}
-            {/* Pass the handleFilterChange function to FilterBar */}
-            {/* Disable FilterBar while damage relations are loading */}
             <FilterBar onFilterChange={handleFilterChange} disabled={loadingDamageRelations} />
 
-            {/* Conditionally render the grid or the detailed card */}
-            {initialLoading && initialPokemonList.length === 0 && <p className="loading">Loading initial Pokemon...</p>}
-            {loadingDamageRelations && <p className="loading">Loading type data for filters...</p>} {/* Indicate loading of filter data */}
-            {error && !pokemon && <div className="error">{error}</div>} {/* Show error if initial load fails */}
+            {/* Main content area with two panes */}
+            <div className="MainContentArea">
+                {/* Left Pane: Pokemon List/Grid */}
+                <div className="PokemonListPane">
+                    {initialLoading && initialPokemonList.length === 0 && <p className="loading">Loading initial Pokemon...</p>}
+                    {loadingDamageRelations && <p className="loading">Loading type data for filters...</p>} {/* Indicate loading of filter data */}
+                    {error && !pokemon && initialPokemonList.length === 0 && <div className="error">{error}</div>} {/* Show error only if list is empty and no pokemon selected */}
 
-            {!pokemon && initialPokemonList.length > 0 && (
-                <div className="PokemonListContainer"> {/* New container div */}
-                    <div className="PokemonGrid"> {/* You'll need to add CSS for this class */}
-                        {/* Render the filtered list instead of the initial list */}
-                        {filteredPokemonList.map((p, index) => (
-                            // Use the PokemonGridItem component here
-                            <PokemonGridItem // Replace the inline div with this component
-                                key={`pokemon-${p.id}-${index}`}
-                                pokemon={p} // Pass simplified data
-                                onClick={() => handleGridItemClick(p.name)}
-                            />
-                        ))}
-                    </div>
-                    {/* Add Load More button */}
-                    {/* Consider how Load More interacts with filtering.
-                        Currently, Load More adds to initialPokemonList, and filtering happens on that list.
-                        If filters are applied, Load More will add more items that are then filtered.
-                        If you want Load More to fetch *only* filtered results, the API call needs to change,
-                        which is not possible with the current PokeAPI /pokemon endpoint.
-                        So, the current approach filters the growing list.
-                    */}
-                    {initialLoading && initialPokemonList.length > 0 && <p className="loading">Loading more...</p>}
-                    {!initialLoading && hasMorePokemon && (
-                        <button className="LoadMoreButton" onClick={handleLoadMore} disabled={initialLoading || loadingDamageRelations}> {/* Disable if loading relations */}
-                            Load More
-                        </button>
-                    )}
-                    {!initialLoading && !hasMorePokemon && totalPokemonCount > 0 && (
-                         <p className="EndMessage">You've seen all {totalPokemonCount} Pokemon!</p>
-                    )}
-                     {/* Message if no Pokemon match the filters */}
-                    {!initialLoading && filteredPokemonList.length === 0 && initialPokemonList.length > 0 && (
-                        <p className="EndMessage">No Pokemon match the current filters.</p>
+                    {initialPokemonList.length > 0 && (
+                        <div className="PokemonListContainer"> 
+                            <div className="PokemonGrid"> 
+                                {filteredPokemonList.map((p, index) => (
+                                    <PokemonGridItem
+                                        key={`pokemon-${p.id}-${index}`}
+                                        pokemon={p}
+                                        onClick={() => handleGridItemClick(p.name)}
+                                    />
+                                ))}
+                            </div>
+                            {initialLoading && initialPokemonList.length > 0 && <p className="loading">Loading more...</p>}
+                            {!initialLoading && hasMorePokemon && (
+                                <button className="LoadMoreButton" onClick={handleLoadMore} disabled={initialLoading || loadingDamageRelations}>
+                                    Load More
+                                </button>
+                            )}
+                            {!initialLoading && !hasMorePokemon && totalPokemonCount > 0 && (
+                                 <p className="EndMessage">You've seen all {totalPokemonCount} Pokemon!</p>
+                            )}
+                            {!initialLoading && filteredPokemonList.length === 0 && initialPokemonList.length > 0 && (
+                                <p className="EndMessage">No Pokemon match the current filters.</p>
+                            )}
+                        </div>
                     )}
                 </div>
-            )}
 
-            {pokemon && (
-                <PokemonCard
-                    pokemon={pokemon}
-                    activeTab={activeTab}
-                    setActiveTab={setActiveTab}
-                    setPokemon={setPokemon}
-                    setError={setError}
-                    handleEvolutionPokemonSelect={handleEvolutionPokemonSelect}
-                />
-            )}
-
-            {/* Remove the initial message */}
-            {/* {!pokemon && !loading && !error && <p className="InitialMessage">Please search for a Pokemon.</p>} */}
+                {/* Right Pane: Pokemon Detail Card */}
+                {pokemon && (
+                    <div className="PokemonDetailPane">
+                        <PokemonCard
+                            pokemon={pokemon}
+                            activeTab={activeTab}
+                            setActiveTab={setActiveTab}
+                            setPokemon={setPokemon} // To allow closing the card
+                            setError={setError}
+                            handleEvolutionPokemonSelect={handleEvolutionPokemonSelect}
+                        />
+                    </div>
+                )}
+            </div>
         </div>
     );
 }
