@@ -1,11 +1,132 @@
 .App {
   text-align: center;
-  padding: 20px;
+  padding: 15px; /* Slightly reduce overall app padding */
   background-color: #f0f2f5; /* Light background */
-  min-height: 100vh; /* Ensure it takes at least full viewport height */
-  display: flex; /* Add flex display */
-  flex-direction: column; /* Stack children vertically */
-  align-items: center; /* Center children horizontally */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Adjust SearchBar and FilterBar margins */
+.search-bar-container {
+  margin: 15px auto; /* Reduce top/bottom margin */
+}
+
+.filter-bar {
+  margin: 10px 0 15px 0; /* Adjust top/bottom margin for filter bar */
+}
+
+.MainContentArea {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 1280px; /* Slightly increase max-width for wider screens */
+  margin-top: 15px; /* Reduce top margin */
+  gap: 25px; /* Increase gap between panes */
+}
+
+.PokemonListPane {
+  flex: 1;
+  overflow-y: auto;
+  max-height: calc(100vh - 180px); /* Adjust max-height based on other elements like header/search */
+  padding-right: 10px; /* Add some padding if scrollbar appears */
+  border-radius: 8px;
+  background-color: #ffffff; /* Optional: give list pane a background */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Optional: subtle shadow */
+}
+
+.PokemonListContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    /* max-width: 900px; /* This is now controlled by PokemonListPane */
+    margin: 0 auto; /* Remove vertical margin, padding will handle spacing */
+    padding: 15px; /* Add padding inside the list container */
+}
+
+.PokemonGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); /* Slightly larger items */
+    gap: 15px;
+    padding: 0; /* Remove padding from grid itself, parent container handles it */
+    width: 100%; /* Ensure grid takes full width of its container */
+}
+
+.PokemonDetailPane {
+  flex-basis: 420px; /* Slightly increase basis for detail card */
+  flex-shrink: 0;
+  max-height: calc(100vh - 180px); /* Match list pane's max-height */
+  overflow: hidden; /* Hide overflow, card will handle its own scroll */
+  border-radius: 8px;
+  background-color: #ffffff; /* Optional: give detail pane a background */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Optional: subtle shadow */
+}
+
+.PokemonDetailPane .PokemonCard {
+  width: 100%;
+  max-width: 100%;
+  height: 100%; /* Make card take full height of its pane */
+  overflow-y: auto; /* Allow card content to scroll */
+  border-radius: 8px; /* Match pane's border-radius */
+  box-shadow: none; /* Remove shadow from card if pane has one */
+}
+
+.LoadMoreButton {
+    margin: 25px auto; /* Increase top/bottom margin */
+    padding: 12px 25px; /* Increase padding */
+}
+
+.EndMessage {
+    margin: 25px auto; /* Increase top/bottom margin */
+    padding: 10px;
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 960px) { /* Adjusted breakpoint */
+  .MainContentArea {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px; /* Adjust gap for stacked view */
+  }
+
+  .PokemonListPane,
+  .PokemonDetailPane {
+    flex-basis: auto;
+    width: 100%;
+    max-width: 600px; /* Adjust max-width for stacked items */
+    max-height: none; 
+    padding-right: 0; /* Remove padding for scrollbar when stacked */
+  }
+
+  .PokemonDetailPane {
+    margin-top: 0; /* Remove margin-top, gap handles spacing */
+  }
+
+  .PokemonListPane {
+    max-height: 60vh; /* Allow more height for list on mobile before detail */
+  }
+
+  .PokemonDetailPane .PokemonCard {
+     max-height: 70vh; /* Allow card to scroll independently on mobile */
+  }
+}
+
+@media (max-width: 480px) { /* Further adjustments for very small screens */
+  .App {
+    padding: 10px;
+  }
+  .PokemonGrid {
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); /* Smaller items for small screens */
+    gap: 10px;
+  }
+  .PokemonListContainer {
+    padding: 10px;
+  }
+  .PokemonDetailPane {
+    max-width: 100%;
+  }
 }
 
 .SearchSection {
@@ -431,131 +552,6 @@ body {
 .PokemonGridItem:hover {
     transform: translateY(-5px); /* Slight lift effect on hover */
 }
-
-.PokemonGridItem h3 {
-    margin: 5px 0;
-    font-size: 1em;
-    color: inherit; /* Inherit color from parent */
-}
-
-.PokemonGridImage {
-    width: 80px; /* Adjust size as needed */
-    height: 80px; /* Adjust size as needed */
-    object-fit: contain; /* Ensure image fits without distortion */
-    margin-bottom: 5px;
-}
-
-/* Style for the type badges within the grid item */
-.PokemonGridItem .TypeBadges {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    margin-top: 5px;
-}
-
-.PokemonGridItem .TypeBadge {
-    background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent white badge */
-    color: #333; /* Dark text for badges */
-    padding: 2px 8px;
-    border-radius: 12px;
-    font-size: 0.7em;
-    font-weight: bold;
-    text-shadow: none; /* Remove text shadow from badge text */
-}
-
-.LoadMoreButton {
-    display: block; /* Make it a block element */
-    /* margin: 20px auto; /* This will now center within the new container */
-    margin: 20px auto;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #ffcb05; /* Yellow */
-    color: #333;
-    border: none;
-    border-radius: 5px;
-    transition: background-color 0.3s ease;
-}
-
-.LoadMoreButton:hover:not(:disabled) {
-    background-color: #e0b000; /* Darker yellow */
-}
-
-.LoadMoreButton:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-}
-
-.EndMessage {
-    text-align: center;
-    /* margin: 20px auto; /* This will now center within the new container */
-    margin: 20px auto;
-    color: #666;
-    font-size: 16px;
-}
-
-/* Add styles for the new container */
-.PokemonListContainer {
-    display: flex;
-    flex-direction: column;
-    align-items: center; /* Center children (grid, button, message) horizontally */
-    width: 100%; /* Allow container to take full width */
-    max-width: 900px; /* Match grid max-width for consistent centering */
-    margin: 20px auto; /* Center the container itself and add vertical margin */
-}
-
-.MainContentArea {
-  display: flex;
-  flex-direction: row; /* Align panes side-by-side */
-  width: 100%;
-  max-width: 1200px; /* Adjust as needed */
-  margin-top: 20px;
-  gap: 20px; /* Space between panes */
-}
-
-.PokemonListPane {
-  flex: 1; /* Takes up available space */
-  /* You might want to add a max-width or specific width here */
-  /* e.g., flex-basis: 60%; */
-  overflow-y: auto; /* Add scroll if content overflows */
-  max-height: 80vh; /* Example max height */
-}
-
-.PokemonDetailPane {
-  flex-basis: 400px; /* Fixed width for the detail card, adjust as needed */
-  flex-shrink: 0; /* Prevent shrinking */
-  /* You might want to add styling for when it's present */
-}
-
-/* Ensure PokemonCard fits well within the new pane */
-.PokemonDetailPane .PokemonCard {
-  width: 100%; /* Make card take full width of its pane */
-  max-width: 100%; /* Override any previous max-width if needed */
-  height: 100%; /* Optional: make it take full height of pane */
-  overflow-y: auto; /* Add scroll if card content overflows */
-  max-height: 80vh; /* Match list pane or adjust */
-}
-
-/* Responsive adjustments for smaller screens */
-@media (max-width: 900px) { /* Adjust breakpoint as needed */
-  .MainContentArea {
-    flex-direction: column; /* Stack panes vertically */
-    align-items: center; /* Center items when stacked */
-  }
-
-  .PokemonListPane,
-  .PokemonDetailPane {
-    flex-basis: auto; /* Reset basis */
-    width: 100%;
-    max-width: 500px; /* Max width for stacked items */
-    max-height: none; /* Reset max-height for vertical scroll */
-  }
-
-  .PokemonDetailPane {
-    margin-top: 20px; /* Add space when stacked */
-  }
-}
-
 
 .PokemonGridItem h3 {
     margin: 5px 0;
