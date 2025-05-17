@@ -73,7 +73,7 @@ function App() {
     const [filters, setFilters] = useState({
         type: '',
         weaknesses: '',
-        ability: '',
+        // ability: '', // Removed
         height: '',
         weight: ''
     });
@@ -228,15 +228,15 @@ function App() {
         }
 
 
-        // Ability filter:
+        // Ability filter: // Removed ability filter logic
         // Implementing an 'ability' filter requires fetching ability data for each Pokemon
         // in the initial list, which is not currently done. Skipping for now.
-        if (filters.ability) {
+        // if (filters.ability) {
             // Logic to check if pokemon has filters.ability would go here.
             // This is complex and requires fetching ability data per pokemon.
             // For now, this filter is effectively disabled until implemented.
             // return false; // Uncomment and add logic if implementing
-        }
+        // }
 
         // Height filter (using simple categories)
         if (filters.height) {
@@ -347,7 +347,7 @@ function App() {
                        "https://via.placeholder.com/150",
                 height: (response.data.height * 0.1).toFixed(2), // Convert decimetres to meters
                 weight: (response.data.weight * 0.1).toFixed(1), // Convert hectograms to kilograms
-                abilities: response.data.abilities.map(ability => ability.ability.name).join(", "),
+                // abilities: response.data.abilities.map(ability => ability.ability.name).join(", "), // Removed
                 types: response.data.types.map(type => type.type.name),
                 stats: {
                     hp: response.data.stats[0].base_stat,

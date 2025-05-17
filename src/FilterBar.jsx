@@ -6,7 +6,7 @@ function FilterBar({ onFilterChange }) {
   const [filters, setFilters] = useState({
     type: '',
     weaknesses: '',
-    ability: '',
+    // ability: '', // Removed
     height: '',
     weight: ''
   });
@@ -16,7 +16,7 @@ function FilterBar({ onFilterChange }) {
 
   // State to hold fetched data
   const [types, setTypes] = useState([]);
-  const [abilities, setAbilities] = useState([]);
+  // const [abilities, setAbilities] = useState([]); // Removed
   const [loadingData, setLoadingData] = useState(true); // New state for data loading
   const [dataError, setDataError] = useState(null); // New state for data fetching errors
 
@@ -25,7 +25,7 @@ function FilterBar({ onFilterChange }) {
   const dropdownRefs = {
     type: useRef(null),
     weaknesses: useRef(null),
-    ability: useRef(null),
+    // ability: useRef(null), // Removed
     height: useRef(null),
     weight: useRef(null),
   };
@@ -60,10 +60,10 @@ function FilterBar({ onFilterChange }) {
           .filter(name => name !== 'unknown' && name !== 'shadow');
         setTypes(fetchedTypes);
 
-        // Fetch abilities
-        const abilitiesResponse = await Axios.get('https://pokeapi.co/api/v2/ability/?limit=300'); // Fetch a reasonable number of abilities
-        const fetchedAbilities = abilitiesResponse.data.results.map(ability => ability.name);
-        setAbilities(fetchedAbilities);
+        // Fetch abilities // Removed ability fetching
+        // const abilitiesResponse = await Axios.get('https://pokeapi.co/api/v2/ability/?limit=300'); 
+        // const fetchedAbilities = abilitiesResponse.data.results.map(ability => ability.name);
+        // setAbilities(fetchedAbilities);
 
       } catch (err) {
         console.error("Error fetching filter data:", err);
@@ -91,7 +91,7 @@ function FilterBar({ onFilterChange }) {
   // Placeholder options for demonstration (will be replaced by fetched data)
   // const typeOptions = ['Normal', 'Fire', 'Water', 'Electric', 'Grass', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'];
   // const weaknessesOptions = ['Normal', 'Fire', 'Water', 'Electric', 'Grass', 'Ice', 'Fighting', 'Poison', 'Ground', 'Flying', 'Psychic', 'Bug', 'Rock', 'Ghost', 'Dragon', 'Dark', 'Steel', 'Fairy'];
-  // const abilityOptions = ['Overgrow', 'Blaze', 'Torrent', 'Static', 'Synchronize']; // Example abilities
+  // const abilityOptions = ['Overgrow', 'Blaze', 'Torrent', 'Static', 'Synchronize']; // Example abilities // Removed
   const heightOptions = ['Small', 'Medium', 'Large']; // Example height categories - keeping as placeholder
   const weightOptions = ['Light', 'Medium', 'Heavy']; // Example weight categories - keeping as placeholder
 
@@ -99,7 +99,7 @@ function FilterBar({ onFilterChange }) {
   // Use fetched data for Type and Weaknesses (Weaknesses uses the same list as Types)
   const typeOptions = types;
   const weaknessesOptions = types; // Weaknesses are based on types
-  const abilityOptions = abilities; // Use fetched abilities
+  // const abilityOptions = abilities; // Use fetched abilities // Removed
 
 
   return (
@@ -151,27 +151,27 @@ function FilterBar({ onFilterChange }) {
             )}
           </div>
 
-          {/* Re-added Ability Filter */}
-          <div className="filter-option" ref={dropdownRefs.ability}>
+          {/* Re-added Ability Filter */} {/* Removed Ability Filter JSX */}
+          {/* <div className="filter-option" ref={dropdownRefs.ability}>
             <button className="filter-button" onClick={() => toggleDropdown('ability')}>
               <span className="filter-icon">✨</span> Ability
             </button>
             {openDropdown === 'ability' && (
               <div className="filter-dropdown">
                 <ul className="dropdown-list">
-                   {/* Add 'All' option */}
+                   
                    <li key="all-ability" className="dropdown-item" onClick={() => handleFilterChange('ability', '')}>
                     All Abilities
                   </li>
                   {abilityOptions.map(option => (
                     <li key={option} className="dropdown-item" onClick={() => handleFilterChange('ability', option.toLowerCase())}>
-                      {option.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')} {/* Capitalize and space for display */}
+                      {option.split('-').map(part => part.charAt(0).toUpperCase() + part.slice(1)).join(' ')} 
                     </li>
                   ))}
                 </ul>
               </div>
             )}
-          </div>
+          </div> */}
 
 
           <div className="filter-option" ref={dropdownRefs.height}>
