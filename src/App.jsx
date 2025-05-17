@@ -6,6 +6,7 @@ import PokemonCard from './PokemonCard';
 // Import the new component for grid items (you'll need to create this file)
 import PokemonGridItem from './PokemonGridItem'; // Uncomment this line
 import SearchBar from './SearchBar'; // Import the new SearchBar component
+import FilterBar from './FilterBar'; // Import the new FilterBar component
 
 // Helper function to get background color based on Pokemon type
 export function getTypeColor(type) { // Export this function
@@ -69,6 +70,58 @@ function App() {
     const [currentPage, setCurrentPage] = useState(0); // State for current page (0-indexed)
     const [itemsPerPage] = useState(50); // Number of items per page
     const [totalPokemonCount, setTotalPokemonCount] = useState(0); // Total number of Pokemon
+    const [filters, setFilters] = useState({
+        type: '',
+        weaknesses: '',
+        ability: '',
+        height: '',
+        weight: ''
+    });
+
+    // New state to store type damage relations
+    const [typeDamageRelations, setTypeDamageRelations] = useState({});
+    const [loadingDamageRelations, setLoadingDamageRelations] = useState(true); // State for loading damage relations
+
+    // Effect to fetch type damage relations on mount
+    useEffect(() => {
+        const fetchDamageRelations = async () => {
+            setLoadingDamageRelations(true);
+            try {
+                // Fetch list of all types
+                const typesListResponse = await Axios.get('https://pokeapi.co/api/v2/type/');
+                const typesUrls = typesListResponse.data.results.map(type => type.url);
+
+                // Fetch details for each type concurrently
+                const damageRelationsPromises = typesUrls.map(async (url) => {
+                    const typeDetailResponse = await Axios.get(url);
+                    return {
+                        name: typeDetailResponse.data.name,
+                        damage_relations: typeDetailResponse.data.damage_relations
+                    };
+                });
+
+                const relations = await Promise.all(damageRelationsPromises);
+
+                // Map relations by type name for easy lookup
+                const relationsMap = relations.reduce((acc, relation) => {
+                    acc[relation.name] = relation.damage_relations;
+                    return acc;
+                }, {});
+
+                setTypeDamageRelations(relationsMap);
+                console.log("[App] Fetched type damage relations:", relationsMap);
+
+            } catch (err) {
+                console.error("[App] Error fetching type damage relations:", err);
+                // Handle error if needed
+            } finally {
+                setLoadingDamageRelations(false);
+            }
+        };
+
+        fetchDamageRelations();
+    }, []); // Empty dependency array means this runs only once on mount
+
 
     // Function to fetch a specific page of Pokemon
     const fetchPokemonPage = async (limit, offset) => {
@@ -89,6 +142,9 @@ function App() {
                            detailResponse.data.sprites.front_default ||
                            "https://via.placeholder.com/100", // Smaller placeholder for grid
                     types: detailResponse.data.types.map(type => type.type.name),
+                    // Add height and weight to the initial fetch
+                    height: detailResponse.data.height, // Height is in decimetres
+                    weight: detailResponse.data.weight, // Weight is in hectograms
                 };
             });
 
@@ -111,6 +167,139 @@ function App() {
         const offset = currentPage * itemsPerPage;
         fetchPokemonPage(itemsPerPage, offset);
     }, [currentPage, itemsPerPage]); // Re-run effect when currentPage or itemsPerPage changes
+
+    // Determine if there are more Pokemon to load
+    const hasMorePokemon = initialPokemonList.length < totalPokemonCount;
+
+    // --- New Filtering Logic ---
+    // Apply filters to the initialPokemonList
+    // Move this declaration BEFORE the useEffect that uses it
+    const filteredPokemonList = initialPokemonList.filter(pokemon => {
+        // Type filter
+        if (filters.type && !pokemon.types.includes(filters.type)) {
+            return false;
+        }
+
+        // Weaknesses filter:
+        // Implementing a true 'weaknesses' filter based on the selected type requires checking
+        // the damage relations of the selected type against the Pokemon's types.
+        // This data is not available in the initial list fetch and would require additional API calls
+        // per Pokemon or a different data fetching strategy. Skipping for now.
+        if (filters.weaknesses) {
+             // Logic to check if pokemon is weak to filters.weaknesses type would go here
+             // This is complex and requires fetching type damage relations.
+             // For now, this filter is effectively disabled until implemented.
+             // return false; // Uncomment and add logic if implementing
+
+             // --- Start Weakness Filter Logic ---
+             const selectedWeaknessType = filters.weaknesses;
+             const weaknessRelations = typeDamageRelations[selectedWeaknessType];
+
+             // If damage relations for the selected weakness type are not loaded, skip filtering
+             if (!weaknessRelations) {
+                 // console.warn(`[App] Damage relations for type "${selectedWeaknessType}" not loaded yet.`);
+                 // Decide how to handle this: either show all or filter out.
+                 // For now, let's filter out if relations aren't loaded for the selected type.
+                 // Alternatively, you could return true here to show all until data loads.
+                 return false;
+             }
+
+             // Check if the Pokemon's types are in the 'double_damage_from' list of the selected weakness type
+             // A Pokemon is weak to the selected type if any of its types receive double damage from the selected type.
+             const isWeak = pokemon.types.some(pokemonType => {
+                 // Find the damage relations for the Pokemon's type
+                 const pokemonTypeRelations = typeDamageRelations[pokemonType];
+
+                 if (!pokemonTypeRelations) {
+                     // console.warn(`[App] Damage relations for pokemon type "${pokemonType}" not loaded yet.`);
+                     return false; // Cannot determine weakness if Pokemon's type relations aren't loaded
+                 }
+
+                 // Check if the selected weakness type is in the 'double_damage_from' list of the Pokemon's type
+                 // This is the correct way: A Pokemon is weak to type X if type X deals double damage to the Pokemon's type.
+                 // So we check the damage relations of the POKEMON's type, not the selected weakness type.
+                 return pokemonTypeRelations.double_damage_from.some(relation => relation.name === selectedWeaknessType);
+             });
+
+             if (!isWeak) {
+                 return false; // Filter out if the Pokemon is NOT weak to the selected type
+             }
+             // --- End Weakness Filter Logic ---
+        }
+
+
+        // Ability filter:
+        // Implementing an 'ability' filter requires fetching ability data for each Pokemon
+        // in the initial list, which is not currently done. Skipping for now.
+        if (filters.ability) {
+            // Logic to check if pokemon has filters.ability would go here.
+            // This is complex and requires fetching ability data per pokemon.
+            // For now, this filter is effectively disabled until implemented.
+            // return false; // Uncomment and add logic if implementing
+        }
+
+        // Height filter (using simple categories)
+        if (filters.height) {
+            // Height is in decimetres (1m = 10 dm)
+            const heightInMeters = pokemon.height * 0.1;
+            let passesHeightFilter = false;
+            switch (filters.height) {
+                case 'small': // Example: < 0.7m
+                    passesHeightFilter = heightInMeters < 0.7;
+                    break;
+                case 'medium': // Example: 0.7m to 1.5m
+                    passesHeightFilter = heightInMeters >= 0.7 && heightInMeters <= 1.5;
+                    break;
+                case 'large': // Example: > 1.5m
+                    passesHeightFilter = heightInMeters > 1.5;
+                    break;
+                default:
+                    passesHeightFilter = true; // 'All' or unknown filter passes
+            }
+            if (!passesHeightFilter) {
+                return false;
+            }
+        }
+
+        // Weight filter (using simple categories)
+        if (filters.weight) {
+             // Weight is in hectograms (1kg = 10 hg)
+            const weightInKg = pokemon.weight * 0.1;
+            let passesWeightFilter = false;
+            switch (filters.weight) {
+                case 'light': // Example: < 10kg
+                    passesWeightFilter = weightInKg < 10;
+                    break;
+                case 'medium': // Example: 10kg to 100kg
+                    passesWeightFilter = weightInKg >= 10 && weightInKg <= 100;
+                    break;
+                case 'heavy': // Example: > 100kg
+                    passesWeightFilter = weightInKg > 100;
+                    break;
+                default:
+                    passesWeightFilter = true; // 'All' or unknown filter passes
+            }
+             if (!passesWeightFilter) {
+                return false;
+            }
+        }
+
+        // If no filters are applied or the pokemon passes all active filters, include it
+        return true;
+    });
+    // --- End New Filtering Logic ---
+
+    // --- New Effect to auto-load more if filtered list is empty ---
+    useEffect(() => {
+        // Check if the filtered list is empty, we are not currently loading,
+        // and there are more pokemon available to load from the API.
+        // Also ensure initialPokemonList is not empty to avoid infinite loop on initial load failure
+        // Add check for loadingDamageRelations - don't auto-load if still fetching relations
+        if (filteredPokemonList.length === 0 && !initialLoading && hasMorePokemon && initialPokemonList.length > 0 && !loadingDamageRelations) {
+            console.log("[App] Filtered list is empty, loading more Pokemon...");
+            handleLoadMore();
+        }
+    }, [filteredPokemonList, initialLoading, hasMorePokemon, initialPokemonList.length, loadingDamageRelations]); // Dependencies
 
     const executeSearch = async (nameToSearch) => {
         const pkmnQuery = (nameToSearch || pokemonName).toLowerCase().trim();
@@ -156,8 +345,8 @@ function App() {
                        response.data.sprites.other?.["official-artwork"]?.front_default ||
                        response.data.sprites.front_default ||
                        "https://via.placeholder.com/150",
-                height: (response.data.height * 0.1).toFixed(2),
-                weight: (response.data.weight * 0.1).toFixed(1),
+                height: (response.data.height * 0.1).toFixed(2), // Convert decimetres to meters
+                weight: (response.data.weight * 0.1).toFixed(1), // Convert hectograms to kilograms
                 abilities: response.data.abilities.map(ability => ability.ability.name).join(", "),
                 types: response.data.types.map(type => type.type.name),
                 stats: {
@@ -214,7 +403,28 @@ function App() {
     };
 
     // Determine if there are more Pokemon to load
-    const hasMorePokemon = initialPokemonList.length < totalPokemonCount;
+    // const hasMorePokemon = initialPokemonList.length < totalPokemonCount; // This line is moved up
+
+    // --- New Filtering Logic ---
+    const handleFilterChange = (newFilters) => {
+        console.log("[App] Filters updated:", newFilters);
+        setFilters(newFilters);
+        // When filters change, reset pagination to start from the beginning
+        // This is a simple approach. A more complex one would refetch data with filters.
+        // For now, we filter the currently loaded list.
+        // setCurrentPage(0); // Decide if you want to reset page on filter change
+        // setInitialPokemonList([]); // Decide if you want to clear list on filter change
+    };
+
+    // Apply filters to the initialPokemonList
+    // const filteredPokemonList = initialPokemonList.filter(pokemon => { // This block is moved up
+    //     // Type filter
+    //     if (filters.type && !pokemon.types.includes(filters.type)) {
+    //         return false;
+    //     }
+    // });
+    // --- End New Filtering Logic ---
+
 
     return (
         <div className="App">
@@ -225,15 +435,22 @@ function App() {
                 handleSearch={() => executeSearch()} // Pass the executeSearch function
                 loading={loading}
             />
+            
+            {/* Add the new FilterBar component here */}
+            {/* Pass the handleFilterChange function to FilterBar */}
+            {/* Disable FilterBar while damage relations are loading */}
+            <FilterBar onFilterChange={handleFilterChange} disabled={loadingDamageRelations} />
 
             {/* Conditionally render the grid or the detailed card */}
             {initialLoading && initialPokemonList.length === 0 && <p className="loading">Loading initial Pokemon...</p>}
+            {loadingDamageRelations && <p className="loading">Loading type data for filters...</p>} {/* Indicate loading of filter data */}
             {error && !pokemon && <div className="error">{error}</div>} {/* Show error if initial load fails */}
 
             {!pokemon && initialPokemonList.length > 0 && (
                 <div className="PokemonListContainer"> {/* New container div */}
                     <div className="PokemonGrid"> {/* You'll need to add CSS for this class */}
-                        {initialPokemonList.map((p, index) => (
+                        {/* Render the filtered list instead of the initial list */}
+                        {filteredPokemonList.map((p, index) => (
                             // Use the PokemonGridItem component here
                             <PokemonGridItem // Replace the inline div with this component
                                 key={`pokemon-${p.id}-${index}`}
@@ -243,14 +460,25 @@ function App() {
                         ))}
                     </div>
                     {/* Add Load More button */}
+                    {/* Consider how Load More interacts with filtering.
+                        Currently, Load More adds to initialPokemonList, and filtering happens on that list.
+                        If filters are applied, Load More will add more items that are then filtered.
+                        If you want Load More to fetch *only* filtered results, the API call needs to change,
+                        which is not possible with the current PokeAPI /pokemon endpoint.
+                        So, the current approach filters the growing list.
+                    */}
                     {initialLoading && initialPokemonList.length > 0 && <p className="loading">Loading more...</p>}
                     {!initialLoading && hasMorePokemon && (
-                        <button className="LoadMoreButton" onClick={handleLoadMore} disabled={initialLoading}>
+                        <button className="LoadMoreButton" onClick={handleLoadMore} disabled={initialLoading || loadingDamageRelations}> {/* Disable if loading relations */}
                             Load More
                         </button>
                     )}
                     {!initialLoading && !hasMorePokemon && totalPokemonCount > 0 && (
                          <p className="EndMessage">You've seen all {totalPokemonCount} Pokemon!</p>
+                    )}
+                     {/* Message if no Pokemon match the filters */}
+                    {!initialLoading && filteredPokemonList.length === 0 && initialPokemonList.length > 0 && (
+                        <p className="EndMessage">No Pokemon match the current filters.</p>
                     )}
                 </div>
             )}

@@ -1,0 +1,90 @@
+.filter-bar {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin: 15px 0;
+  flex-wrap: wrap;
+  padding: 0 15px;
+}
+
+.filter-option {
+  position: relative;
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: #f2f2f2;
+  border: 1px solid #ddd;
+  border-radius: 20px;
+  padding: 8px 15px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filter-button:hover {
+  background-color: #e6e6e6;
+}
+
+.filter-icon {
+  font-size: 16px;
+}
+
+/* Dropdown Styles */
+.filter-dropdown {
+  position: absolute;
+  top: 100%; /* Position below the button */
+  left: 0;
+  z-index: 10; /* Ensure dropdown is above other content */
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  margin-top: 5px; /* Space between button and dropdown */
+  max-height: 200px; /* Limit height and add scroll */
+  overflow-y: auto;
+  width: 150px; /* Adjust width as needed */
+  text-align: left;
+}
+
+.dropdown-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.dropdown-item {
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 14px;
+  color: #333;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+}
+
+
+/* Responsive styles */
+@media (max-width: 600px) {
+  .filter-bar {
+    gap: 5px;
+  }
+  
+  .filter-button {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .filter-dropdown {
+    width: 120px; /* Adjust width for smaller screens */
+  }
+
+  .dropdown-item {
+    padding: 6px 10px; /* Adjust padding for smaller screens */
+    font-size: 12px;
+  }
+}
